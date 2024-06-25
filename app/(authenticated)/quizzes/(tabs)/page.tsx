@@ -7,10 +7,17 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Routes } from "@/lib/routes";
 import NewQuizButton from "../../components/new_quiz_button";
 import { IoMdAdd } from "react-icons/io";
+import { createCustomServerClient } from "@/lib/supabase/server";
 
 interface AllQuizzesProps {}
 
-const AllQuizzes: FunctionComponent<AllQuizzesProps> = () => {
+const AllQuizzes: FunctionComponent<AllQuizzesProps> = async () => {
+  const supabase = createCustomServerClient();
+
+  let { data: quiz, error } = await supabase.from("quiz").select("*");
+  console.log("Quizzes:", quiz);
+  console.log("Error:", error);
+
   return (
     <TabsContent value={Routes.ALL}>
       {/* <section className="flex flex-col items-center gap-2 py-24 sm:py-28  md:py-32 text-center">
