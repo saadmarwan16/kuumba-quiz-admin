@@ -34,27 +34,27 @@ export type Database = {
   }
   public: {
     Tables: {
-      quiz: {
+      quizzes: {
         Row: {
           author: string
-          created_at: string
+          cover: string
           id: string
-          image: string
           name: string
+          published: boolean | null
         }
         Insert: {
           author: string
-          created_at?: string
+          cover: string
           id?: string
-          image: string
           name: string
+          published?: boolean | null
         }
         Update: {
           author?: string
-          created_at?: string
+          cover?: string
           id?: string
-          image?: string
           name?: string
+          published?: boolean | null
         }
         Relationships: []
       }

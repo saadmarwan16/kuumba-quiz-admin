@@ -1,16 +1,28 @@
-import { Button } from "@/components/ui/button";
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Typography from "@/components/ui/typography";
-import { FunctionComponent } from "react";
-import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { FunctionComponent, useEffect, useRef } from "react";
+import { insertQuiz } from "./actions";
+import { useFormState } from "react-dom";
+import InsertQuizButton, { UploadImage } from "./components";
+import { INSERT_QUIZ_SUCCESS_MESSAGE } from "@/lib/literals";
+import { useRouter } from "next/navigation";
+import { Routes } from "@/lib/routes";
 
-interface NewQuizProps {}
+const NewQuiz: FunctionComponent = () => {
+  const form = useRef<HTMLFormElement | null>(null);
+  const [state, action] = useFormState(insertQuiz, undefined);
+  const router = useRouter();
 
-const NewQuiz: FunctionComponent<NewQuizProps> = () => {
+  useEffect(() => {
+    if (state?.data && state.data === INSERT_QUIZ_SUCCESS_MESSAGE)
+      router.push(Routes.ALL);
+  }, [router, state]);
+
   return (
-    <form className="flex flex-col gap-9">
+    <form ref={form} action={action} className="flex flex-col gap-9">
       <Typography variant="h3">Add New Quiz</Typography>
       <div className="flex flex-col-reverse md:flex-row gap-6 md:gap-10 lg:gap-12 grow md:items-start">
         <div className="flex flex-col justify-center items-center gap-6 md:grow lg:max-w-[600px]">
@@ -19,55 +31,42 @@ const NewQuiz: FunctionComponent<NewQuizProps> = () => {
             <Input
               type="text"
               id="name"
+              name="name"
               placeholder="Enter the name of the book here..."
             />
-            <Label
-              htmlFor="name"
-              className="text-sm font-light text-destructive"
-            >
-              Book name must contain at least 2 characters
-            </Label>
+            {state?.validationError?.fieldErrors.name?.map((error, idx) => (
+              <Label
+                key={idx}
+                htmlFor="name"
+                className="text-sm font-light text-destructive"
+              >
+                {error}
+              </Label>
+            ))}
           </div>
           <div className="w-full">
             <Label htmlFor="author">Author</Label>
             <Input
               type="text"
               id="author"
+              name="author"
               placeholder="Enter the name of the author here..."
             />
-            <Label
-              htmlFor="author"
-              className="text-sm font-light text-destructive"
-            >
-              Author name must contain at least 2 characters
-            </Label>
+            {state?.validationError?.fieldErrors.author?.map((error, idx) => (
+              <Label
+                key={idx}
+                htmlFor="author"
+                className="text-sm font-light text-destructive"
+              >
+                {error}
+              </Label>
+            ))}
           </div>
         </div>
 
-        {/* <div className="flex flex-col gap-4 max-w-52 md:grow">
-          <AspectRatio ratio={9 / 16} className="bg-muted">
-            <Image
-              src="/img/rich_dad_poor_dad.jpg"
-              alt="Rich Dad Poor Dad book cover"
-              fill
-              className="rounded-md object-cover"
-            />
-          </AspectRatio>
-          <Button type="button" variant='outline'>Update Cover</Button>
-        </div> */}
-
-        <div className="md:grow max-w-[600px]">
-          <Label htmlFor="image">Cover</Label>
-          <Input id="image" type="file" />
-          <Label
-            htmlFor="image"
-            className="text-sm font-light text-destructive"
-          >
-            Quiz cover cannot be null
-          </Label>
-        </div>
+        <UploadImage state={state} />
       </div>
-      <Button type="submit" className="md:max-w-[400px] lg:max-w-[600px]">Add Quiz</Button>
+      <InsertQuizButton />
     </form>
   );
 };
