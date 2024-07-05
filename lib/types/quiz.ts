@@ -11,15 +11,25 @@ export const QuizSchema = z.object({
       file.size !== 0 &&
       file.type.startsWith("image/")
   ),
-  // published: z.boolean(),
+  published: z.boolean({ required_error: "Published status is required", coerce: true }),
 });
 
-export const InsertQuizSchema = QuizSchema.omit({ id: true });
+export const InsertQuizSchema = QuizSchema.omit({ id: true, published: true });
+
+export const UpdateQuizSchema = QuizSchema.merge(
+  z.object({
+    cover: z.custom<File>(
+      (file) => typeof file === "object" && file instanceof File
+    ),
+  })
+);
 
 export const DeleteQuizSchema = QuizSchema.pick({ id: true });
 
 export type TQuiz = z.infer<typeof QuizSchema>;
 
 export type TInsertQuiz = z.infer<typeof InsertQuizSchema>;
+
+export type TUpdateQuiz = z.infer<typeof UpdateQuizSchema>;
 
 export type TDeleteQuiz = z.infer<typeof DeleteQuizSchema>;

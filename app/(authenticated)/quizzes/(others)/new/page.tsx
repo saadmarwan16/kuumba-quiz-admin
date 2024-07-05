@@ -17,8 +17,10 @@ const NewQuiz: FunctionComponent = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (state?.data && state.data === INSERT_QUIZ_SUCCESS_MESSAGE)
+    if (state?.data && state.data === INSERT_QUIZ_SUCCESS_MESSAGE) {
+      router.refresh();
       router.push(Routes.ALL);
+    }
   }, [router, state]);
 
   return (
