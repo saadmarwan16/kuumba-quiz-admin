@@ -8,7 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useFormStatus } from "react-dom";
 import Typography from "@/components/ui/typography";
-import { deleteQuiz, updateQuiz } from "./actions";
+import {
+  deleteQuiz,
+  generateNewQuestions,
+  generateQuestions,
+  updateQuiz,
+} from "./actions";
 import { useFormState } from "react-dom";
 import {
   DELETE_QUIZ_SUCCESS_MESSAGE,
@@ -16,7 +21,6 @@ import {
 } from "@/lib/literals";
 import { useRouter } from "next/navigation";
 import { Routes } from "@/lib/routes";
-import { Quiz } from "@/lib/types/schema";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Accordion,
@@ -25,6 +29,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { IoMdAdd } from "react-icons/io";
+import { TQuizWithQuestion } from "@/lib/types/quiz";
 
 interface UploadImageProps {
   defaultCover: string;
@@ -109,8 +114,67 @@ export const UpdateQuizButton: FunctionComponent = () => {
   );
 };
 
+interface GenerateQuestionsProps {
+  name: string;
+  quiz_id: string;
+}
+
+export const GenerateQuestions: FunctionComponent<GenerateQuestionsProps> = ({
+  name,
+  quiz_id,
+}) => {
+  const [pending, setPending] = useState(false);
+  const router = useRouter();
+
+  return (
+    <Button
+      type="button"
+      disabled={pending}
+      onClick={async () => {
+        setPending(true);
+        await generateQuestions(name, quiz_id);
+        setPending(false);
+        router.refresh();
+      }}
+    >
+      <IoMdAdd className="mr-2 h-6 w-6" />
+      Generate Questions
+    </Button>
+  );
+};
+
+interface GenerateNewQuestionsProps {
+  name: string;
+  quiz_id: string;
+}
+
+const GenerateNewQuestions: FunctionComponent<GenerateNewQuestionsProps> = ({
+  name,
+  quiz_id,
+}) => {
+  const [pending, setPending] = useState(false);
+  const router = useRouter();
+
+  return (
+    <Button
+      type="button"
+      disabled={pending}
+      onClick={async () => {
+        setPending(true);
+        await generateNewQuestions(name, quiz_id);
+        setPending(false);
+        router.refresh();
+      }}
+    >
+      Generate New Questions
+    </Button>
+  );
+};
+
+export default GenerateNewQuestions;
+
 interface UpdateQuizFormProps {
-  data: Quiz;
+  data: TQuizWithQuestion;
 }
 
 export const UpdateQuizForm: FunctionComponent<UpdateQuizFormProps> = ({
@@ -194,50 +258,48 @@ export const UpdateQuizForm: FunctionComponent<UpdateQuizFormProps> = ({
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center self-stretch">
           <Typography variant="h4">Questions</Typography>
-          <Button
-            type="button"
-            onClick={() => {
-              console.log("Generate new questions");
-            }}
-          >
-            Generate New Questions
-          </Button>
+          <GenerateNewQuestions name={data.name} quiz_id={data.id} />
         </div>
 
-        <div className="flex flex-col items-center gap-2 py-24 sm:py-28  md:py-32 text-center">
-          <Typography variant="h1">Oops!</Typography>
-          <Typography variant="h3">Something went wrong.</Typography>
-          <Typography variant="p" affects="removePMargin">
-            No questions found. Try generating some.
-          </Typography>
-          <Button type='button' onClick={() => console.log("Generating questions")}>
-            <IoMdAdd className="mr-2 h-6 w-6" />
-            Generate Questions
-          </Button>
-        </div>
-
-        {/* <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1">
-            <AccordionTrigger>Is it accessible?</AccordionTrigger>
-            <AccordionContent>
-              Yes. It adheres to the WAI-ARIA design pattern.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-2">
-            <AccordionTrigger>Is it styled?</AccordionTrigger>
-            <AccordionContent>
-              Yes. It comes with default styles that matches the other
-              components&apos; aesthetic.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-3">
-            <AccordionTrigger>Is it animated?</AccordionTrigger>
-            <AccordionContent>
-              Yes. It&apos;s animated by default, but you can disable it if you
-              prefer.
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion> */}
+        {data.questions.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-24 sm:py-28  md:py-32 text-center">
+            <Typography variant="h1">Oops!</Typography>
+            <Typography variant="h3">Something went wrong.</Typography>
+            <Typography variant="p" affects="removePMargin">
+              No questions found. Try generating some.
+            </Typography>
+            <GenerateQuestions name={data.name} quiz_id={data.id} />
+          </div>
+        ) : (
+          <Accordion type="single" collapsible className="w-full">
+            {data.questions.map((question) => (
+              <AccordionItem
+                key={question.id}
+                value={`Question ${question.question_number}`}
+              >
+                <AccordionTrigger>{question.question}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-4">
+                    {question.options.map((option, idx) => (
+                      <Typography
+                        key={idx}
+                        variant="p"
+                        affects="small"
+                        className={`!mt-0 ${
+                          option === question.answer
+                            ? "text-[#188351]"
+                            : "text-[#EC4034]"
+                        }`}
+                      >
+                        {option}
+                      </Typography>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
       </div>
       <div className="self-stretch flex flex-col gap-3 sm:flex-row sm:gap-6 max-w-[640px]">
         <DeleteQuizButton id={data.id} />

@@ -15,7 +15,7 @@ const QuizDetails: FunctionComponent<QuizDetailsProps> = async ({
   const supabase = createCustomServerClient();
   const { data, error } = await supabase
     .from("quizzes")
-    .select()
+    .select(`*,questions(*)`)
     .eq("id", id)
     .limit(1)
     .single();

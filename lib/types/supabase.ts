@@ -34,6 +34,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      questions: {
+        Row: {
+          answer: string
+          id: number
+          options: string[]
+          question: string
+          question_number: number
+          quiz_id: string
+        }
+        Insert: {
+          answer: string
+          id?: number
+          options: string[]
+          question: string
+          question_number: number
+          quiz_id: string
+        }
+        Update: {
+          answer?: string
+          id?: number
+          options?: string[]
+          question?: string
+          question_number?: number
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quizzes: {
         Row: {
           author: string
